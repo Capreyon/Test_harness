@@ -267,8 +267,8 @@ main()
 
 	/*
 	 * (rax = lapic address, 0xff000000)
-         * orl   $00100000,0xf0(%rax)             || or r/m, imm8
-         * 0x0c 0xf0 0x00 0x00 0x00 0xff 0xfe 0xff 0xff
+         * orl   $ff,0xf0(%rax)             || or r/m, imm8
+         * 0x0c 0xf0 0x00 0x00 0x00 0xff
          */
 	memset(&vie, 0, sizeof(struct vie));
 	vie.base_register = VM_REG_LAST;
@@ -280,11 +280,8 @@ main()
 	vie.inst[2] = 0x00;
 	vie.inst[3] = 0x00;
 	vie.inst[4] = 0x00;
-	vie.inst[5] = 0x00;
-	vie.inst[6] = 0x00;
-	vie.inst[7] = 0x10;
-	vie.inst[8] = 0x00;
-	vie.num_valid = 9;
+	vie.inst[5] = 0xff;
+	vie.num_valid = 6;
 
 	gla = 0;
 	err = vmm_decode_instruction(NULL, 0, gla, &vie);
