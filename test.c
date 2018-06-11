@@ -231,8 +231,8 @@ main()
 	assert(mc.val == 0xdeadbeef);
 
      /*
-	 * (rcx = lapic address, 0xff000000)
-	 * or    0xf0(%rcx),%eax
+	 * (rcx = lapic address, 0xff000000)  
+	 * or    0xf0(%rcx),%eax              || or r/m, reg
 	 * 0x83 0x81 0xf0 0x00 0x00 0x00
 	 */
 	memset(&vie, 0, sizeof(struct vie));
@@ -260,5 +260,45 @@ main()
 				      test_mread, test_mwrite,
 				      &mc);
 	assert(err == 0);
+
+	memset(&vie, 0, size of struct(vie));
+	vie.base_register = VM_REG_LAST
+
+
+	/*
+	 * (rax = lapic address, 0xff000000)
+         * orl   $00100000,0xf0(%rax)             || or r/m, imm8
+         * 0x0c 0xf0 0x00 0x00 0x00 0xff 0xfe 0xff 0xff
+         */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	vm_regs[VM_REG_GUEST_RAX] = 0xff000000;
+	vie.inst[0] = 0x0c;
+	vie.inst[1] = 0xf0;
+	vie.inst[2] = 0x00;
+	vie.inst[3] = 0x00;
+	vie.inst[4] = 0x00;
+	vie.inst[5] = 0x00;
+	vie.inst[6] = 0x00;
+	vie.inst[7] = 0x10;
+	vie.inst[8] = 0x00;
+	vie.num_valid = 9;
+
+	gla = 0;
+	err = vmm_decode_instruction(NULL, 0, gla, &vie);
+	assert(err == 0);
+
+	mc.addr = 0xff0000f0;
+	mc.val  = 0x0000a1aa;
+	gpa = 0xff0000f0;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xa0aa);
+
+
 
 }
