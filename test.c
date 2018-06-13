@@ -338,7 +338,7 @@ main()
 	vm_regs[VM_REG_GUEST_RAX] = 0x0000aabb;
 	vm_regs[VM_REG_GUEST_RCX] = 0xff000000;
 	vm_regs[VM_REG_GUEST_RFLAGS]=0xff000000;
-	vie.inst[0] = 0x83;
+	vie.inst[0] = 0x39;
 	vie.inst[1] = 0xf0;
 	vie.inst[2] = 0x00;
 	vie.inst[3] = 0x00;
