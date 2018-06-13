@@ -369,7 +369,8 @@ main()
 	vie.index_register = VM_REG_LAST;
 
 	vm_regs[VM_REG_GUEST_RAX] = 0xff000000;
-	vie.inst[0] = 0x0c;
+	vm_regs[VM_REG_GUEST_RFLAGS]=0xff000000;
+	vie.inst[0] = 0x80;
 	vie.inst[1] = 0xf0;
 	vie.inst[2] = 0x00;
 	vie.inst[3] = 0x00;
@@ -389,5 +390,7 @@ main()
 				      &mc);
 	assert(err == 0);
 	assert(mc.val == 0xa0aa);
+
+
 
 }
