@@ -785,6 +785,19 @@ decode_immediate(struct vie *vie)
 	return (0);
 }
 
+/*
+ * Verify that all the bytes in the instruction buffer were consumed.
+ */
+	 	 static int
+	 	 verify_inst_length(struct vie *vie)
+	 	 {
+	 	 	if (vie->num_processed == vie->num_valid)
+	 	        return (0);
+	 	    else
+	 	        return (-1);
+	 	 }
+
+
 //#define	VERIFY_GLA
 /*
  * Verify that the 'guest linear address' provided as collateral of the nested
@@ -856,6 +869,9 @@ vmm_decode_instruction(struct vm *vm, int cpuid, uint64_t gla, struct vie *vie)
 	
 	if (decode_immediate(vie))
 		return (-1);
+
+	if (verify_inst_length(vie))
+	 	return (-1);
 
 #ifdef VERIFY_GLA
 	if (verify_gla(vm, cpuid, gla, vie))
