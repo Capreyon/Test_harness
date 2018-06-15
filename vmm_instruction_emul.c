@@ -64,6 +64,7 @@ enum {
 	VIE_OP_TYPE_NONE = 0,
 	VIE_OP_TYPE_MOV,
 	VIE_OP_TYPE_AND,
+	VIE_OP_TYPE_OR,
 	VIE_OP_TYPE_LAST
 };
 
@@ -98,7 +99,13 @@ static const struct vie_op one_byte_opcodes[256] = {
 		.op_byte = 0x81,
 		.op_type = VIE_OP_TYPE_AND,
 		.op_flags = VIE_OP_F_IMM,
-	}
+	},
+	[0x83] = { 
+	    /* XXX Group 1 extended opcode - not just OR */
+ 	     .op_byte = 0x83,
+	 	 .op_type = VIE_OP_TYPE_OR,
+ 	     .op_flags = VIE_OP_F_IMM8, 	        
+ 	 }
 };
 
 /* struct vie.mod */
@@ -376,6 +383,53 @@ emulate_and(void *vm, int vcpuid, uint64_t gpa, struct vie *vie,
 	return (error);
 }
 
+static int
+emulate_or(void *vm, int vcpuid, uint64_t gpa, struct vie *vie,
+	    mem_region_read_t memread, mem_region_write_t memwrite, void *arg)
+{
+	int error, size;
+	uint64_t val1;
+
+	size = 4;
+	error = EINVAL;
+
+	switch (vie->op.op_byte) {
+	case 0x83:
+		/*
+		 * OR mem (ModRM:r/m) with immediate and store the
+		 * result in mem.
+		 *
+		 * 83/          OR r/m32, imm8 sign-extended to 32
+		 * REX.W + 83/  OR r/m64, imm8 sign-extended to 64
+		 *
+		 * Currently, only the OR operation of the 0x83 opcode
+		 * is implemented (ModRM:reg = b001).
+		 */
+		if ((vie->reg & 7) != 1)
+			break;
+
+		if (vie->rex_w)
+			size = 8;
+		
+		/* get the first operand */
+                error = memread(vm, vcpuid, gpa, &val1, size, arg);
+                if (error)
+			break;
+
+                /*
+		 * perform the operation with the pre-fetched immediate
+		 * operand and write the result
+		 */
+                val1 |= vie->immediate;
+                error = memwrite(vm, vcpuid, gpa, val1, size, arg);
+		break;
+	default:
+		break;
+	}
+	return (error);
+}
+
+
 int
 vmm_emulate_instruction(void *vm, int vcpuid, uint64_t gpa, struct vie *vie,
 			mem_region_read_t memread, mem_region_write_t memwrite,
@@ -395,6 +449,10 @@ vmm_emulate_instruction(void *vm, int vcpuid, uint64_t gpa, struct vie *vie,
 		error = emulate_and(vm, vcpuid, gpa, vie,
 				    memread, memwrite, memarg);
 		break;
+	case VIE_OP_TYPE_OR:
+ 	    error = emulate_or(vm, vcpuid, gpa, vie,
+	 	            memread, memwrite, memarg);
+	 	break;
 	default:
 		error = EINVAL;
 		break;
@@ -882,4 +940,5 @@ vmm_decode_instruction(struct vm *vm, int cpuid, uint64_t gla, struct vie *vie)
 
 	return (0);
 }
+
 #endif	/* _KERNEL || _VERIFICATION */
