@@ -95,8 +95,10 @@ main()
 	int err;
 
 	/*
+	 *ICLASS: AND         CATEGORY: LOGICAL               EXTENSION: BASE              IFORM: AND_GPRv_MEMv           ISA_SET: I86
+     *SHORT: and eax, dword ptr [ecx+0xf0]
 	 * (rcx = lapic address, 0xff000000)
-	 * and    0xf0(%rcx),%eax
+	 * and    0xf0(%rcx),%eax                         
 	 * 0x23 0x81 0xf0 0x00 0x00 0x00
 	 */
 	memset(&vie, 0, sizeof(struct vie));
@@ -127,10 +129,12 @@ main()
 
 
 	/*
-	 * (rax = lapic address, 0xff000000)
-         * andl   $0xfffffeff,0xf0(%rax)
-         * 0x81 0xa0 0xf0 0x00 0x00 0x00 0xff 0xfe 0xff 0xff
-         */
+	 * ICLASS: AND         CATEGORY: LOGICAL              EXTENSION: BASE            IFORM: AND_MEMv_IMMz              ISA_SET: I86
+     * SHORT: and dword ptr [eax+0xf0], 0xfffffeff
+     * (rax = lapic address, 0xff000000)
+     * andl   $0xfffffeff,0xf0(%rax)
+     * 0x81 0xa0 0xf0 0x00 0x00 0x00 0xff 0xfe 0xff 0xff
+     */
 
 	memset(&vie, 0, sizeof(struct vie));
 	vie.base_register = VM_REG_LAST;
@@ -163,8 +167,10 @@ main()
 	assert(mc.val == 0xa0aa);
 
 	/*
-	 * mov    %r8d,5827804(%rip)
-	 * 44 89 05 dc ec 58 00
+	 * ICLASS: MOV             CATEGORY: DATAXFER            EXTENSION: BASE           IFORM: MOV_MEMb_GPR8             ISA_SET: I86
+     * SHORT: mov byte ptr [ecx+0x58ecdc05], cl
+     * mov    %r8d,5827804(%rip)
+	 * 88 89 05 dc ec 58 00
 	 * rip -> 0xffffffff8046539d
 	 * var -> 0xffffffff809f4080
 	 */
@@ -175,7 +181,7 @@ main()
 	/* RIP-relative is from next instruction */
 	vm_regs[VM_REG_GUEST_RIP] = 0xffffffff8046539d + 7;	
 	vm_regs[VM_REG_GUEST_R8] = 0xa5a5a5a5deadbeefULL;
-	vie.inst[0] = 0x44;
+	vie.inst[0] = 0x88;
 	vie.inst[1] = 0x89;
 	vie.inst[2] = 0x05;
 	vie.inst[3] = 0xdc;
