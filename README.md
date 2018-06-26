@@ -49,7 +49,7 @@ and the compiled examples will be in obj/examples.
     ./mfile.py
     
 3. Then go to xed/obj/examples and run the xed file using ./xed --help. You will get a list of encoding/decoding options.
-   Select -ir raw_input_file (decode a raw unformatted binary file) and run the tests.
+   Select either -d hex-string (decode one instruction, must be last) or -de hex-string (decode-then-encode, must be last)      where hex-string is a string of hex-code for that instruction which you want to decode.
    
    See source build documentation for more information.
    
