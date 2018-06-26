@@ -352,6 +352,44 @@ main()
 				      &mc);
 	assert(err == 0);
 	assert(mc.val == 0xdeadbeef);
+ 
+	/*ICLASS: MOV          CATEGORY: DATAXFER             EXTENSION: BASE             IFORM: MOV_GPR8_MEMb                ISA_SET: I86
+
+     *SHORT: mov cl, byte ptr [ecx+0x58ecdc05]                 MOV r8, r/m8
+     * mov    %r8d,5827804(%rip)
+	 * 8a 89 05 dc ec 58 00
+	 * rip -> 0xffffffff8046539d
+	 * var -> 0xffffffff809f4080
+	 */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	/* RIP-relative is from next instruction */
+	vm_regs[VM_REG_GUEST_RIP] = 0xffffffff8046539d + 7;	
+	vm_regs[VM_REG_GUEST_R8] = 0xa5a5a5a5deadbeefULL;
+	vie.inst[0] = 0x8a;
+	vie.inst[1] = 0x89;
+	vie.inst[2] = 0x05;
+	vie.inst[3] = 0xdc;
+	vie.inst[4] = 0xec;
+	vie.inst[5] = 0x58;
+	vie.inst[6] = 0x00;
+	vie.num_valid = 7;
+
+	gla = 0;
+	err = vmm_decode_instruction(NULL, 0, gla, &vie);
+	assert(err == 0);
+
+	mc.addr = 0xff000080;
+	mc.val  = 0;
+	gpa = 0xff000080;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
+
 
 
 	/*
