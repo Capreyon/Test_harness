@@ -95,9 +95,9 @@ main()
 	int err;
 
 	/*
-	 *ICLASS: AND         CATEGORY: LOGICAL               EXTENSION: BASE              IFORM: AND_GPRv_MEMv           ISA_SET: I86
+	 * ICLASS: AND         CATEGORY: LOGICAL               EXTENSION: BASE              IFORM: AND_GPRv_MEMv           ISA_SET: I86
      
-     *SHORT: and eax, dword ptr [ecx+0xf0]                  AND r16/32, r/m16/32
+     * SHORT: and eax, dword ptr [ecx+0xf0]                  AND r16/32, r/m16/32
 	 * (rcx = lapic address, 0xff000000)
 	 * and    0xf0(%rcx),%eax                         
 	 * 0x23 0x81 0xf0 0x00 0x00 0x00
@@ -206,9 +206,9 @@ main()
 	assert(mc.val == 0xa0aa);
 
     /*
-     *ICLASS: AND          CATEGORY: LOGICAL           EXTENSION: BASE         IFORM: AND_MEMb_IMMb_80r4               ISA_SET: I86
+     * ICLASS: AND          CATEGORY: LOGICAL           EXTENSION: BASE         IFORM: AND_MEMb_IMMb_80r4               ISA_SET: I86
      
-     *SHORT: and byte ptr [eax+0xf0], 0xff                AND r/m8, imm8
+     * SHORT: and byte ptr [eax+0xf0], 0xff                AND r/m8, imm8
      * (rax = lapic address, 0xff000000)
      * andl   $0xff,0xf0(%rax)
      * 0x80 0xa0 0xf0 0x00 0x00 0x00 0xff 
@@ -242,8 +242,8 @@ main()
 	assert(err == 0);
 	assert(mc.val == 0xa0aa);
 
-
-	/*SHORT: and byte ptr [eax+0xf0], 0xff                AND r/m16/32, imm8
+    /*
+	 * SHORT: and byte ptr [eax+0xf0], 0xff                AND r/m16/32, imm8
      * (rax = lapic address, 0xff000000)
      * andl   $0xff,0xf0(%rax)
      * 0x83 0xa0 0xf0 0x00 0x00 0x00 0xff 
@@ -317,8 +317,10 @@ main()
 	assert(mc.val == 0xdeadbeef);
 
 
-    /*
-     *SHORT: mov dword ptr [eax+0x58ecdc05], ecx               MOV r/m16/32, r16/32
+    /* 
+     *ICLASS: MOV              CATEGORY: DATAXFER              EXTENSION: BASE             IFORM: MOV_MEMv_GPRv      ISA_SET: I86
+
+     * SHORT: mov dword ptr [eax+0x58ecdc05], ecx               MOV r/m16/32, r16/32
      * mov    %r8d,5827804(%rip)
 	 * 89 88 05 dc ec 58 00
 	 * rip -> 0xffffffff8046539d
@@ -353,9 +355,10 @@ main()
 	assert(err == 0);
 	assert(mc.val == 0xdeadbeef);
  
-	/*ICLASS: MOV          CATEGORY: DATAXFER             EXTENSION: BASE             IFORM: MOV_GPR8_MEMb                ISA_SET: I86
+	/*
+	 * ICLASS: MOV          CATEGORY: DATAXFER             EXTENSION: BASE             IFORM: MOV_GPR8_MEMb                ISA_SET: I86
 
-     *SHORT: mov cl, byte ptr [ecx+0x58ecdc05]                 MOV r8, r/m8
+     * SHORT: mov cl, byte ptr [ecx+0x58ecdc05]                 MOV r8, r/m8
      * mov    %r8d,5827804(%rip)
 	 * 8a 89 05 dc ec 58 00
 	 * rip -> 0xffffffff8046539d
@@ -390,8 +393,9 @@ main()
 	assert(err == 0);
 	assert(mc.val == 0xdeadbeef);
 
-	/*ICLASS: MOV             CATEGORY: DATAXFER               EXTENSION: BASE            IFORM: MOV_GPRv_MEMv           ISA_SET: I86
-     *SHORT: mov ecx, dword ptr [eax+0x58ecdc05]               MOV r16/32, r/m16/32
+	/* 
+	 * ICLASS: MOV             CATEGORY: DATAXFER               EXTENSION: BASE            IFORM: MOV_GPRv_MEMv           ISA_SET: I86
+     * SHORT: mov ecx, dword ptr [eax+0x58ecdc05]               MOV r16/32, r/m16/32
      * mov    %r8d,5827804(%rip)
 	 * 8b 88 05 dc ec 58 00
 	 * rip -> 0xffffffff8046539d
@@ -426,8 +430,9 @@ main()
 	assert(err == 0);
 	assert(mc.val == 0xdeadbeef);
 
-	/*ICLASS: MOV          CATEGORY: DATAXFER              EXTENSION: BASE              IFORM: MOV_OrAX_MEMv         ISA_SET: I86
-     *SHORT: mov eax, dword ptr [0x0]                      MOV eax, moffs 16/32
+	/* 
+	 *ICLASS: MOV          CATEGORY: DATAXFER              EXTENSION: BASE              IFORM: MOV_OrAX_MEMv         ISA_SET: I86
+     * SHORT: mov eax, dword ptr [0x0]                      MOV eax, moffs 16/32
      * mov    %r8d,5827804(%rip)  
 	 * a1 00 00 00 00 
 	 * rip -> 0xffffffff8046539d
@@ -459,6 +464,43 @@ main()
 				      &mc);
 	assert(err == 0);
 	assert(mc.val == 0xdeadbeef);
+
+
+    /* 
+     *ICLASS: MOV             CATEGORY: DATAXFER             EXTENSION: BASE               IFORM: MOV_MEMv_OrAX          ISA_SET: I86
+     * SHORT: mov dword ptr [0x0], eax                        MOV moffs16/32, eax
+     * mov    %r8d,5827804(%rip)  
+	 * a3 00 00 00 00 
+	 * rip -> 0xffffffff8046539d
+	 * var -> 0xffffffff809f4080
+	 */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	/* RIP-relative is from next instruction */
+	vm_regs[VM_REG_GUEST_RIP] = 0xffffffff8046539d + 5;	
+	vm_regs[VM_REG_GUEST_R8] = 0xa5a5a5a5deadbeefULL;
+	vie.inst[0] = 0xa3;
+	vie.inst[1] = 0x00;
+	vie.inst[2] = 0x00;
+	vie.inst[3] = 0x00;
+	vie.inst[4] = 0x00;
+	vie.num_valid = 5;
+
+	gla = 0;
+	err = vmm_decode_instruction(NULL, 0, gla, &vie);
+	assert(err == 0);
+
+	mc.addr = 0xff000080;
+	mc.val  = 0;
+	gpa = 0xff000080;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
+
 
 
 
