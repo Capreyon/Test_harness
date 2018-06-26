@@ -130,7 +130,8 @@ main()
 
 	/*
 	 * ICLASS: AND         CATEGORY: LOGICAL              EXTENSION: BASE            IFORM: AND_MEMv_IMMz              ISA_SET: I86
-     * SHORT: and dword ptr [eax+0xf0], 0xfffffeff
+
+     * SHORT: and dword ptr [eax+0xf0], 0xfffffeff        AND r/m32, imm32
      * (rax = lapic address, 0xff000000)
      * andl   $0xfffffeff,0xf0(%rax)
      * 0x81 0xa0 0xf0 0x00 0x00 0x00 0xff 0xfe 0xff 0xff
@@ -151,6 +152,43 @@ main()
 	vie.inst[7] = 0xfe;
 	vie.inst[8] = 0xff;
 	vie.inst[9] = 0xff;
+	vie.num_valid = 10;
+
+	gla = 0;
+	err = vmm_decode_instruction(NULL, 0, gla, &vie);
+	assert(err == 0);
+
+	mc.addr = 0xff0000f0;
+	mc.val  = 0x0000a1aa;
+	gpa = 0xff0000f0;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xa0aa);
+
+	/*
+	 * SHORT: and dword ptr [eax+0xf0], 0xffef0000             AND r/m16, imm16
+     * (rax = lapic address, 0xff000000)
+     * andl   $0x0000feff,0xf0(%rax)
+     * 0x81 0xa0 0xf0 0x00 0x00 0x00 0xff 0xfe 0x00 0x00
+     */
+
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	vm_regs[VM_REG_GUEST_RAX] = 0xff000000;
+	vie.inst[0] = 0x81;
+	vie.inst[1] = 0xa0;
+	vie.inst[2] = 0xf0;
+	vie.inst[3] = 0x00;
+	vie.inst[4] = 0x00;
+	vie.inst[5] = 0x00;
+	vie.inst[6] = 0xff;
+	vie.inst[7] = 0xfe;
+	vie.inst[8] = 0x00;
+	vie.inst[9] = 0x00;
 	vie.num_valid = 10;
 
 	gla = 0;
