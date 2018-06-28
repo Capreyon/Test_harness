@@ -505,6 +505,8 @@ main()
 
 
 	/*
+	 * ICLASS: MOV             CATEGORY: DATAXFER            EXTENSION: BASE           IFORM: MOV_MEMv_IMMz             ISA_SET: I86
+     * SHORT: mov dword ptr [eax+0x58ecdc05], 0xffff                         MOV r/m 16, imm16
 	 * movl   $0x1ef,5872021(%rip)
 	 * c7 05 95 99 59 00 ef
 	 * rip -> ffffffff813d2751
@@ -516,15 +518,18 @@ main()
 	vie.index_register = VM_REG_LAST;
 
 	/* RIP-relative is from next instruction */
-	vm_regs[VM_REG_GUEST_RIP] = 0xffffffff8046539d + 7;	
+	vm_regs[VM_REG_GUEST_RIP] = 0xffffffff8046539d + 9;	
 	vie.inst[0] = 0xc7;
-	vie.inst[1] = 0x05;
-	vie.inst[2] = 0x95;
-	vie.inst[3] = 0x99;
-	vie.inst[4] = 0x59;
-	vie.inst[5] = 0x00;
-	vie.inst[6] = 0xef;
-	vie.num_valid = 7;
+	vie.inst[1] = 0x80;
+	vie.inst[2] = 0x05;
+	vie.inst[3] = 0xdc;
+	vie.inst[4] = 0xec;
+	vie.inst[5] = 0x58;
+	vie.inst[6] = 0xff;
+	vie.inst[7] = 0xff;
+	vie.inst[7] = 0x00;
+	vie.inst[8] = 0x00;
+	vie.num_valid = 9;
 
     gla = 0;
     err = vmm_decode_instruction(NULL, 0, gla, &vie);
