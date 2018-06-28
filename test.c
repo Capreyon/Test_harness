@@ -544,6 +544,47 @@ main()
 	assert(err == 0);
 	assert(mc.val == 0xdeadbeef);
 
+	/*
+	 * ICLASS: MOV             CATEGORY: DATAXFER            EXTENSION: BASE           IFORM: MOV_MEMv_IMMz             ISA_SET: I86
+     * SHORT: mov dword ptr [eax+0x58ecdc05], 0xffffffff                        MOV r/m 32, imm32
+	 * movl   $0x1ef,5872021(%rip)
+	 * c7 05 95 99 59 00 ef
+	 * rip -> ffffffff813d2751
+	 * val -> ffffffff8196c0f0
+	 * pa -> 0xfee000f0
+	 */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	/* RIP-relative is from next instruction */
+	vm_regs[VM_REG_GUEST_RIP] = 0xffffffff8046539d + 9;	
+	vie.inst[0] = 0xc7;
+	vie.inst[1] = 0x80;
+	vie.inst[2] = 0x05;
+	vie.inst[3] = 0xdc;
+	vie.inst[4] = 0xec;
+	vie.inst[5] = 0x58;
+	vie.inst[6] = 0xff;
+	vie.inst[7] = 0xff;
+	vie.inst[7] = 0xff;
+	vie.inst[8] = 0xff;
+	vie.num_valid = 9;
+
+    gla = 0;
+    err = vmm_decode_instruction(NULL, 0, gla, &vie);
+    assert(err == 0);
+
+    mc.addr = 0xfee000f0;
+	mc.val  = 0;
+	gpa = 0xfee000f0;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
+
+
      /*
 	 * (rcx = lapic address, 0xff000000)  
 	 * or    0xf0(%rcx),%eax              || or r/m, reg
