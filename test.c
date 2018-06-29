@@ -659,7 +659,7 @@ main()
 
 	/* 
 	 * ICLASS: MOVZX            CATEGORY: DATAXFER            EXTENSION: BASE          IFORM: MOVZX_GPRv_MEMb           ISA_SET: I386
-     * SHORT: movzx ax, byte ptr [ecx+0x58ecdc05]            MoVZX r32, r/m8 (Mov with Zero-extend)
+     * SHORT: movzx eax, byte ptr [ecx+0x58ecdc05]            MoVZX r32, r/m8 (Mov with Zero-extend)
      * 0f b6 81 05 dc ec 58
 	 * rip -> ffffffff813d2751
 	 * val -> ffffffff8196c0f0
@@ -711,7 +711,7 @@ main()
 	vie.inst[1] = 0xb7;
 	vie.inst[2] = 0x81;
 	vie.inst[3] = 0x05;
-	vie.inst[4] = 0xdc;
+	vie.inst[4] = 0xdc;	
 	vie.inst[5] = 0xec;
 	vie.inst[6] = 0x58;
 	vie.num_valid = 7;
@@ -728,6 +728,44 @@ main()
 				      &mc);
 	assert(err == 0);
 	assert(mc.val == 0xdeadbeef);
+
+	/*
+	 * ICLASS: MOVSX             CATEGORY: DATAXFER             EXTENSION: BASE            IFORM: MOVSX_GPRv_MEMb         ISA_SET: I386
+     * SHORT: movsx ax, byte ptr [ecx+0x58ecdc05]               MOVSX r16/32, r/m8
+     * 66 0f be 81 05 dc ec 58
+	 * rip -> ffffffff813d2751
+	 * val -> ffffffff8196c0f0
+	 * pa -> 0xfee000f0
+	 */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	/* RIP-relative is from next instruction */
+	vm_regs[VM_REG_GUEST_RIP] = 0xffffffff8046539d + 8;	
+	vie.inst[0] = 0x66;
+	vie.inst[1] = 0x0f;
+	vie.inst[2] = 0xbe;
+	vie.inst[3] = 0x81;
+	vie.inst[4] = 0x05;
+	vie.inst[5] = 0xdc;
+	vie.inst[6] = 0xec;
+	vie.inst[7] = 0x58;
+	vie.num_valid = 8;
+
+    gla = 0;
+    err = vmm_decode_instruction(NULL, 0, gla, &vie);
+    assert(err == 0);
+
+    mc.addr = 0xfee000f0;
+	mc.val  = 0;
+	gpa = 0xfee000f0;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
+
 
 
     /*
