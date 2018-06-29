@@ -620,9 +620,44 @@ main()
 	assert(err == 0);
 	assert(mc.val == 0xdeadbeef);
 
+	/* 
+	 * ICLASS: MOVZX            CATEGORY: DATAXFER            EXTENSION: BASE          IFORM: MOVZX_GPRv_MEMb           ISA_SET: I386
+     * SHORT: movzx ax, byte ptr [ecx+0x58ecdc05]            MoVZX r16, r/m8 (Mov with Zero-extend)
+     * 66 0f b6 81 05 dc ec 58
+	 * rip -> ffffffff813d2751
+	 * val -> ffffffff8196c0f0
+	 * pa -> 0xfee000f0
+	 */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
 
+	/* RIP-relative is from next instruction */
+	vm_regs[VM_REG_GUEST_RIP] = 0xffffffff8046539d + 8;	
+	vie.inst[0] = 0x66;
+	vie.inst[1] = 0x0f;
+	vie.inst[2] = 0xb6;
+	vie.inst[3] = 0x81;
+	vie.inst[4] = 0x05;
+	vie.inst[5] = 0xdc;
+	vie.inst[6] = 0xec;
+	vie.inst[7] = 0x58;
+	vie.num_valid = 8;
 
-     /*
+    gla = 0;
+    err = vmm_decode_instruction(NULL, 0, gla, &vie);
+    assert(err == 0);
+
+    mc.addr = 0xfee000f0;
+	mc.val  = 0;
+	gpa = 0xfee000f0;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
+
+    /*
 	 * (rcx = lapic address, 0xff000000)  
 	 * or    0xf0(%rcx),%eax              || or r/m, reg
 	 * 0x83 0x81 0xf0 0x00 0x00 0x00
@@ -816,103 +851,9 @@ main()
 	assert(mc.val == 0xa0aa);
 
 
-	/*
-	 * (rcx = lapic address, 0xff000000)  
-	 * mov    0xf0(%rcx),%eax              ||   mov r/m8, r8
-	 * 0x8a 0xf0 0x00 0x00 0x00
-	 */
-	memset(&vie, 0, sizeof(struct vie));
-	vie.base_register = VM_REG_LAST;
-	vie.index_register = VM_REG_LAST;
+	
 
-	vm_regs[VM_REG_GUEST_RAX] = 0x000000bb;
-	vm_regs[VM_REG_GUEST_RCX] = 0xff000000;
-	vie.inst[0] = 0x8a;
-	vie.inst[1] = 0xf0;
-	vie.inst[2] = 0x00;
-	vie.inst[3] = 0x00;
-	vie.inst[4] = 0x00;
-	vie.num_valid = 5;
-
-	gla = 0;
-	err = vmm_decode_instruction(NULL, 0, gla, &vie);
-	assert(err == 0);
-
-	mc.addr = 0xff0000f0;
-	mc.val  = 0x0000aa00;
-	gpa = 0xff0000f0;
-	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
-				      test_mread, test_mwrite,
-				      &mc);
-	assert(err == 0);
-	assert(mc.val == 0xdeadbeef);
-
-
-	/*
-	 * (rcx = lapic address, 0xff000000)  
-	 * mov    0xf0(%rcx),%eax              ||   mov r16/32/64, r/m8 (Move with zero extend)
-	 * 0xb6 0x0f 0xf0 0x00 0x00 0x00
-	 */
-	memset(&vie, 0, sizeof(struct vie));
-	vie.base_register = VM_REG_LAST;
-	vie.index_register = VM_REG_LAST;
-
-	vm_regs[VM_REG_GUEST_RAX] = 0x000000bb;
-	vm_regs[VM_REG_GUEST_RCX] = 0xff000000;
-	vie.inst[0] = 0xb6;
-	vie.inst[1] = 0x0f;
-	vie.inst[2] = 0xf0;
-	vie.inst[3] = 0x00;
-	vie.inst[4] = 0x00;
-	vie.inst[5] = 0x00;
-	vie.num_valid = 6;
-
-	gla = 0;
-	err = vmm_decode_instruction(NULL, 0, gla, &vie);
-	assert(err == 0);
-
-	mc.addr = 0xff0000f0;
-	mc.val  = 0x0000aa00;
-	gpa = 0xff0000f0;
-	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
-				      test_mread, test_mwrite,
-				      &mc);
-	assert(err == 0);
-	assert(mc.val == 0xdeadbeef);
-
-
-	/*
-	 * (rcx = lapic address, 0xff000000)  
-	 * movsx    0xf0(%rcx),%eax              ||   mov r16/32/64, r/m8 (Move with sign extension)
-	 * 0xbe 0x0f 0xf0 0x00 0x00 0x00
-	 */
-	memset(&vie, 0, sizeof(struct vie));
-	vie.base_register = VM_REG_LAST;
-	vie.index_register = VM_REG_LAST;
-
-	vm_regs[VM_REG_GUEST_RAX] = 0x000000bb;
-	vm_regs[VM_REG_GUEST_RCX] = 0xff000000;
-	vie.inst[0] = 0xbe;
-	vie.inst[1] = 0x0f;
-	vie.inst[2] = 0xf0;
-	vie.inst[3] = 0x00;
-	vie.inst[4] = 0x00;
-	vie.inst[5] = 0x00;
-	vie.num_valid = 6;
-
-	gla = 0;
-	err = vmm_decode_instruction(NULL, 0, gla, &vie);
-	assert(err == 0);
-
-	mc.addr = 0xff0000f0;
-	mc.val  = 0x0000aa00;
-	gpa = 0xff0000f0;
-	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
-				      test_mread, test_mwrite,
-				      &mc);
-	assert(err == 0);
-	assert(mc.val == 0xdeadbeef);
-
+	
 	/*
 	 * (rax = lapic address, 0xff000000)
          * mov   $ff,0xf0(%rax)             || mov r/m8, imm8  ( XXX Group 11 extended opcode - not just MOV )
