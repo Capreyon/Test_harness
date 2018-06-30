@@ -801,7 +801,96 @@ main()
 				      &mc);
 	assert(err == 0);
 	assert(mc.val == 0xdeadbeef);
+    /*
+	 * ICLASS: MOVSB              CATEGORY: STRINGOP                EXTENSION: BASE               IFORM: MOVSB             ISA_SET: I86
+     * SHORT: movsb byte ptr [di], byte ptr [si]                      MOVSB m8, m8
+     * 67 a4                                                    move data from string to string
+	 * rip -> ffffffff813d2751
+	 * val -> ffffffff8196c0f0
+	 * pa -> 0xfee000f0
+	 */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
 
+	/* RIP-relative is from next instruction */
+	vm_regs[VM_REG_GUEST_RIP] = 0xffffffff8046539d + 2;	
+	vie.inst[0] = 0x67;
+	vie.inst[1] = 0xa4;
+	vie.num_valid = 2;
+
+    gla = 0;
+    err = vmm_decode_instruction(NULL, 0, gla, &vie);
+    assert(err == 0);
+
+    mc.addr = 0xfee000f0;
+	mc.val  = 0;
+	gpa = 0xfee000f0;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
+
+	 /*
+	 * ICLASS: MOVSW             CATEGORY: STRINGOP             EXTENSION: BASE                 IFORM: MOVSW            ISA_SET: I86
+     * SHORT: movsw word ptr [edi], word ptr [esi]                 MOVSW m16/32, m16/32
+     * 66 a5                                                move data from string to string
+	 * rip -> ffffffff813d2751
+	 * val -> ffffffff8196c0f0
+	 * pa -> 0xfee000f0
+	 */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	/* RIP-relative is from next instruction */
+	vm_regs[VM_REG_GUEST_RIP] = 0xffffffff8046539d + 2;	
+	vie.inst[0] = 0x66;
+	vie.inst[1] = 0xa5;
+	vie.num_valid = 2;
+
+    gla = 0;
+    err = vmm_decode_instruction(NULL, 0, gla, &vie);
+    assert(err == 0);
+
+    mc.addr = 0xfee000f0;
+	mc.val  = 0;
+	gpa = 0xfee000f0;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
+    /*
+	 * ICLASS: MOVSD              CATEGORY: STRINGOP              EXTENSION: BASE             IFORM: MOVSD               ISA_SET: I386
+     * SHORT: movsd dword ptr [edi], dword ptr [esi]                     MOVSW m32, m32
+     * A5                                                    move data from string to string
+	 * rip -> ffffffff813d2751
+	 * val -> ffffffff8196c0f0
+	 * pa -> 0xfee000f0
+	 */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	/* RIP-relative is from next instruction */
+	vm_regs[VM_REG_GUEST_RIP] = 0xffffffff8046539d + 1;	
+	vie.inst[0] = 0xa5;
+	vie.num_valid = 1;
+
+    gla = 0;
+    err = vmm_decode_instruction(NULL, 0, gla, &vie);
+    assert(err == 0);
+
+    mc.addr = 0xfee000f0;
+	mc.val  = 0;
+	gpa = 0xfee000f0;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
 
 
     /*
