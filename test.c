@@ -961,11 +961,14 @@ main()
 	assert(err == 0);
 	assert(mc.val == 0xdeadbeef);
 
+	   
 	 /*
+	 * ICLASS: CMP             CATEGORY: BINARY               EXTENSION: BASE                 IFORM: CMP_MEMv_GPRv           ISA_SET: I86
+     * SHORT: cmp word ptr [ecx+0x58ecdc05], ax             cmp r/m16/32, reg16   
 	 * (rcx = lapic address, 0xff000000)  
-	 * cmp    0x39(%rcx),%eax              || cmp r/m16, reg16
-	 * 0x39 0xf0 0x00 0x00 0x00
+	 * 66 39 81 05 dc ec 58
 	 */
+
 	memset(&vie, 0, sizeof(struct vie));
 	vie.base_register = VM_REG_LAST;
 	vie.index_register = VM_REG_LAST;
@@ -973,12 +976,14 @@ main()
 	vm_regs[VM_REG_GUEST_RAX] = 0x0000aabb;
 	vm_regs[VM_REG_GUEST_RCX] = 0xff000000;
 	vm_regs[VM_REG_GUEST_RFLAGS]=0xff000000;
-	vie.inst[0] = 0x39;
-	vie.inst[1] = 0xf0;
-	vie.inst[2] = 0x00;
-	vie.inst[3] = 0x00;
-	vie.inst[4] = 0x00;
-	vie.num_valid = 5;
+	vie.inst[0] = 0x66;
+	vie.inst[1] = 0x39;
+	vie.inst[2] = 0x81;
+	vie.inst[3] = 0x05;
+	vie.inst[4] = 0xdc;
+	vie.inst[5] = 0xec;
+	vie.inst[6] = 0x58;
+	vie.num_valid = 7;
 
 	gla = 0;
 	err = vmm_decode_instruction(NULL, 0, gla, &vie);
@@ -992,6 +997,42 @@ main()
 				      &mc);
 	assert(err == 0);
 	assert(mc.val == 0xdeadbeef);
+
+    /*
+	 * ICLASS: CMP             CATEGORY: BINARY               EXTENSION: BASE                 IFORM: CMP_MEMv_GPRv           ISA_SET: I86
+     * SHORT: cmp word ptr [ecx+0x58ecdc05], eax             cmp r/m16/32, reg32   
+	 * (rcx = lapic address, 0xff000000)  
+	 * 39 81 05 dc ec 58
+	 */
+	
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	vm_regs[VM_REG_GUEST_RAX] = 0x0000aabb;
+	vm_regs[VM_REG_GUEST_RCX] = 0xff000000;
+	vm_regs[VM_REG_GUEST_RFLAGS]=0xff000000;
+	vie.inst[0] = 0x39;
+	vie.inst[1] = 0x80;
+	vie.inst[2] = 0x05;
+	vie.inst[3] = 0xdc;
+	vie.inst[4] = 0xec;
+	vie.inst[5] = 0x58;
+	vie.num_valid = 6;
+
+	gla = 0;
+	err = vmm_decode_instruction(NULL, 0, gla, &vie);
+	assert(err == 0);
+
+	mc.addr = 0xff0000f0;
+	mc.val  = 0x0000aa00;
+	gpa = 0xff0000f0;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
+
 
 
 	/*
