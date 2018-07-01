@@ -1000,7 +1000,7 @@ main()
 
     /*
 	 * ICLASS: CMP             CATEGORY: BINARY               EXTENSION: BASE                 IFORM: CMP_MEMv_GPRv           ISA_SET: I86
-     * SHORT: cmp word ptr [ecx+0x58ecdc05], eax             cmp r/m16/32, reg32   
+     * SHORT: cmp dword ptr [ecx+0x58ecdc05], eax             cmp r/m16/32, reg32   
 	 * (rcx = lapic address, 0xff000000)  
 	 * 39 81 05 dc ec 58
 	 */
@@ -1032,26 +1032,63 @@ main()
 				      &mc);
 	assert(err == 0);
 	assert(mc.val == 0xdeadbeef);
-
-
-
+    
 	/*
-	 * (rax = lapic address, 0xff000000)
-         * cmp   $ff,0xf0(%rax)             || cmp r/m, imm8
-         * 0x80 0xf0 0x00 0x00 0x00 0xff
-         */
+	 * ICLASS: CMP                CATEGORY: BINARY                 EXTENSION: BASE               IFORM: CMP_GPRv_MEMv       ISA_SET: I86
+     * SHORT: cmp ax, word ptr [ecx+0x58ecdc05]                  cmp r16, r/m16/32
+     * (rcx = lapic address, 0xff000000)  
+	 * 66 3b 81 05 dc ec 58
+	 */
+	
 	memset(&vie, 0, sizeof(struct vie));
 	vie.base_register = VM_REG_LAST;
 	vie.index_register = VM_REG_LAST;
 
-	vm_regs[VM_REG_GUEST_RAX] = 0xff000000;
+	vm_regs[VM_REG_GUEST_RAX] = 0x0000aabb;
+	vm_regs[VM_REG_GUEST_RCX] = 0xff000000;
 	vm_regs[VM_REG_GUEST_RFLAGS]=0xff000000;
-	vie.inst[0] = 0x80;
-	vie.inst[1] = 0xf0;
-	vie.inst[2] = 0x00;
-	vie.inst[3] = 0x00;
-	vie.inst[4] = 0x00;
-	vie.inst[5] = 0xff;
+	vie.inst[0] = 0x66;
+	vie.inst[1] = 0x3b;
+	vie.inst[2] = 0x81;
+	vie.inst[3] = 0x05;
+	vie.inst[4] = 0xdc;
+	vie.inst[5] = 0xec;
+	vie.inst[6] = 0x58;
+	vie.num_valid = 7;
+
+	gla = 0;
+	err = vmm_decode_instruction(NULL, 0, gla, &vie);
+	assert(err == 0);
+
+	mc.addr = 0xff0000f0;
+	mc.val  = 0x0000aa00;
+	gpa = 0xff0000f0;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
+
+	/*
+	 * ICLASS: CMP                CATEGORY: BINARY                 EXTENSION: BASE               IFORM: CMP_GPRv_MEMv       ISA_SET: I86
+     * SHORT: cmp eax, dword ptr [ecx+0x58ecdc05]                  cmp r32, r/m16/32
+     * (rcx = lapic address, 0xff000000)  
+	 * 3b 81 05 dc ec 58
+	 */
+	
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	vm_regs[VM_REG_GUEST_RAX] = 0x0000aabb;
+	vm_regs[VM_REG_GUEST_RCX] = 0xff000000;
+	vm_regs[VM_REG_GUEST_RFLAGS]=0xff000000;
+	vie.inst[0] = 0x3b;
+	vie.inst[1] = 0x81;
+	vie.inst[2] = 0x05;
+	vie.inst[3] = 0xdc;
+	vie.inst[4] = 0xec;
+	vie.inst[5] = 0x58;
 	vie.num_valid = 6;
 
 	gla = 0;
@@ -1059,19 +1096,20 @@ main()
 	assert(err == 0);
 
 	mc.addr = 0xff0000f0;
-	mc.val  = 0x0000a1aa;
+	mc.val  = 0x0000aa00;
 	gpa = 0xff0000f0;
 	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
 				      test_mread, test_mwrite,
 				      &mc);
 	assert(err == 0);
-	assert(mc.val == 0xa0aa);
+	assert(mc.val == 0xdeadbeef);
+
 
 	/*
 	 * (rax = lapic address, 0xff000000)
-         * BT   $ff,0xf0(%rax)             || BT r/m16/32/64, imm8  
-         * 0xBA 0xf0 0x00 0x00 0x00 0xff
-         */
+     * BT   $ff,0xf0(%rax)             || BT r/m16/32/64, imm8  
+     * 0xBA 0xf0 0x00 0x00 0x00 0xff
+     */
 	memset(&vie, 0, sizeof(struct vie));
 	vie.base_register = VM_REG_LAST;
 	vie.index_register = VM_REG_LAST;
@@ -1099,15 +1137,12 @@ main()
 	assert(err == 0);
 	assert(mc.val == 0xa0aa);
 
-
-	
-
 	
 	/*
 	 * (rax = lapic address, 0xff000000)
-         * mov   $ff,0xf0(%rax)             || mov r/m8, imm8  ( XXX Group 11 extended opcode - not just MOV )
-         * 0xc6 0xf0 0x00 0x00 0x00 0xff
-         */
+     * mov   $ff,0xf0(%rax)             || mov r/m8, imm8  ( XXX Group 11 extended opcode - not just MOV )
+     * 0xc6 0xf0 0x00 0x00 0x00 0xff
+     */
 	memset(&vie, 0, sizeof(struct vie));
 	vie.base_register = VM_REG_LAST;
 	vie.index_register = VM_REG_LAST;
