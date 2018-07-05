@@ -509,6 +509,7 @@ main()
      * SHORT: mov dword ptr [eax+0x58ecdc05], 0xffff                         MOV r/m 16, imm16
 	 * movl   $0x1ef,5872021(%rip)
 	 * c7 05 95 99 59 00 ef
+	 * c7 80 05 dc ec 58 ff ff 00 00
 	 * rip -> ffffffff813d2751
 	 * val -> ffffffff8196c0f0
 	 * pa -> 0xfee000f0
@@ -549,6 +550,7 @@ main()
      * SHORT: mov dword ptr [eax+0x58ecdc05], 0xffffffff                        MOV r/m 32, imm32
 	 * movl   $0x1ef,5872021(%rip)
 	 * c7 05 95 99 59 00 ef
+	 * c7 80 05 dc ec 58 ff ff ff ff
 	 * rip -> ffffffff813d2751
 	 * val -> ffffffff8196c0f0
 	 * pa -> 0xfee000f0
