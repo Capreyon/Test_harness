@@ -1108,9 +1108,9 @@ main()
 
 
 	/*
-	 * (rax = lapic address, 0xff000000)
-     * BT   $ff,0xf0(%rax)             || BT r/m16/32/64, imm8  
-     * 0xBA 0xf0 0x00 0x00 0x00 0xff
+	 * ICLASS: BT              CATEGORY: BITBYTE                   EXTENSION: BASE              IFORM: BT_MEMv_IMMb       ISA_SET: I386
+     * SHORT: bt word ptr [ecx+0x58ecdc05], 0xff                BT r/m16, imm8  
+     * 0x66, 0x0F, 0xBA, 0xA1, 0x05, 0xDC, 0xEC, 0x58, 0xFF
      */
 	memset(&vie, 0, sizeof(struct vie));
 	vie.base_register = VM_REG_LAST;
@@ -1118,13 +1118,16 @@ main()
 
 	vm_regs[VM_REG_GUEST_RAX] = 0xff000000;
 	vm_regs[VM_REG_GUEST_RFLAGS]=0xff000000;
-	vie.inst[0] = 0xBA;
-	vie.inst[1] = 0xf0;
-	vie.inst[2] = 0x00;
-	vie.inst[3] = 0x00;
-	vie.inst[4] = 0x00;
-	vie.inst[5] = 0xff;
-	vie.num_valid = 6;
+	vie.inst[0] = 0x66;
+	vie.inst[1] = 0x0f;
+	vie.inst[2] = 0xba;
+	vie.inst[3] = 0xa1;
+	vie.inst[4] = 0x05;
+	vie.inst[5] = 0xdc;
+	vie.inst[6] = 0xec;
+	vie.inst[7] = 0x58;
+	vie.inst[8] = 0xff;
+	vie.num_valid = 9;
 
 	gla = 0;
 	err = vmm_decode_instruction(NULL, 0, gla, &vie);
@@ -1138,6 +1141,42 @@ main()
 				      &mc);s
 	assert(err == 0);
 	assert(mc.val == 0xa0aa);
+    
+
+    /*
+	 * ICLASS: BT              CATEGORY: BITBYTE                 EXTENSION: BASE             IFORM: BT_MEMv_IMMb          ISA_SET: I386
+     * SHORT: bt dword ptr [ecx+0x58ecdc05], 0xff
+     * 0x0F, 0xBA, 0xA1, 0x05, 0xDC, 0xEC, 0x58, 0xFF
+     */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	vm_regs[VM_REG_GUEST_RAX] = 0xff000000;
+	vm_regs[VM_REG_GUEST_RFLAGS]=0xff000000;
+	vie.inst[0] = 0x0f;
+	vie.inst[1] = 0xba;
+	vie.inst[2] = 0xa1;
+	vie.inst[3] = 0x05;
+	vie.inst[4] = 0xdc;
+	vie.inst[5] = 0xec;
+	vie.inst[6] = 0x58;
+	vie.inst[7] = 0xff;
+	vie.num_valid = 8;
+
+	gla = 0;
+	err = vmm_decode_instruction(NULL, 0, gla, &vie);
+	assert(err == 0);
+
+	mc.addr = 0xff0000f0;
+	mc.val  = 0x0000a1aa;
+	gpa = 0xff0000f0;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);s
+	assert(err == 0);
+	assert(mc.val == 0xa0aa);
+    
 
 	
 	/*
