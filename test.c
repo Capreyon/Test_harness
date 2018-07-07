@@ -897,7 +897,7 @@ main()
     /* 
 	 * ICLASS: OR             CATEGORY: LOGICAL           EXTENSION: BASE               IFORM: OR_GPRv_MEMv             ISA_SET: I86
      * SHORT: or ax, word ptr [ecx+0x5dcec58]
-     * (rcx = lapic address, 0xff000000)                  || or reg16, r/m16/32
+     * (rcx = lapic address, 0xff000000)                 OR reg16, r/m16/32
 	 * 66 0b 81 05 dc ec 58
 	 */
 
@@ -932,7 +932,7 @@ main()
 	/* 
 	 * ICLASS: OR             CATEGORY: LOGICAL           EXTENSION: BASE               IFORM: OR_GPRv_MEMv             ISA_SET: I86
      * SHORT: or eax, word ptr [ecx+0x5dcec58]
-     * (rcx = lapic address, 0xff000000)                  || or reg32, r/m16/32
+     * (rcx = lapic address, 0xff000000)                  OR reg32, r/m16/32
 	 * 0b 81 05 dc ec 58
 	 */
 
@@ -966,7 +966,7 @@ main()
 	   
 	 /*
 	 * ICLASS: CMP             CATEGORY: BINARY               EXTENSION: BASE                 IFORM: CMP_MEMv_GPRv           ISA_SET: I86
-     * SHORT: cmp word ptr [ecx+0x58ecdc05], ax             cmp r/m16/32, reg16   
+     * SHORT: cmp word ptr [ecx+0x58ecdc05], ax               CMP r/m16/32, reg16   
 	 * (rcx = lapic address, 0xff000000)  
 	 * 66 39 81 05 dc ec 58
 	 */
@@ -1002,7 +1002,7 @@ main()
 
     /*
 	 * ICLASS: CMP             CATEGORY: BINARY               EXTENSION: BASE                 IFORM: CMP_MEMv_GPRv           ISA_SET: I86
-     * SHORT: cmp dword ptr [ecx+0x58ecdc05], eax             cmp r/m16/32, reg32   
+     * SHORT: cmp dword ptr [ecx+0x58ecdc05], eax             CMP r/m16/32, reg32   
 	 * (rcx = lapic address, 0xff000000)  
 	 * 39 81 05 dc ec 58
 	 */
@@ -1037,7 +1037,7 @@ main()
     
 	/*
 	 * ICLASS: CMP                CATEGORY: BINARY                 EXTENSION: BASE               IFORM: CMP_GPRv_MEMv       ISA_SET: I86
-     * SHORT: cmp ax, word ptr [ecx+0x58ecdc05]                  cmp r16, r/m16/32
+     * SHORT: cmp ax, word ptr [ecx+0x58ecdc05]                     CMP r16, r/m16/32
      * (rcx = lapic address, 0xff000000)  
 	 * 66 3b 81 05 dc ec 58
 	 */
@@ -1073,7 +1073,7 @@ main()
 
 	/*
 	 * ICLASS: CMP                CATEGORY: BINARY                 EXTENSION: BASE               IFORM: CMP_GPRv_MEMv       ISA_SET: I86
-     * SHORT: cmp eax, dword ptr [ecx+0x58ecdc05]                  cmp r32, r/m16/32
+     * SHORT: cmp eax, dword ptr [ecx+0x58ecdc05]                  CMP r32, r/m16/32
      * (rcx = lapic address, 0xff000000)  
 	 * 3b 81 05 dc ec 58
 	 */
@@ -1109,7 +1109,7 @@ main()
 
 	/*
 	 * ICLASS: BT              CATEGORY: BITBYTE                   EXTENSION: BASE              IFORM: BT_MEMv_IMMb       ISA_SET: I386
-     * SHORT: bt word ptr [ecx+0x58ecdc05], 0xff                BT r/m16, imm8  
+     * SHORT: bt word ptr [ecx+0x58ecdc05], 0xff                    BT r/m16, imm8  
      * 0x66, 0x0F, 0xBA, 0xA1, 0x05, 0xDC, 0xEC, 0x58, 0xFF
      */
 	memset(&vie, 0, sizeof(struct vie));
@@ -1145,7 +1145,7 @@ main()
 
     /*
 	 * ICLASS: BT              CATEGORY: BITBYTE                 EXTENSION: BASE             IFORM: BT_MEMv_IMMb          ISA_SET: I386
-     * SHORT: bt dword ptr [ecx+0x58ecdc05], 0xff              BT r/m32, imm8
+     * SHORT: bt dword ptr [ecx+0x58ecdc05], 0xff                 BT r/m32, imm8
      * 0x0F, 0xBA, 0xA1, 0x05, 0xDC, 0xEC, 0x58, 0xFF
      */
 	memset(&vie, 0, sizeof(struct vie));
@@ -1213,7 +1213,7 @@ main()
 
 	/*
 	 * ICLASS: SUB                 CATEGORY: BINARY               EXTENSION: BASE            IFORM: SUB_GPRv_MEMv        ISA_SET: I86
-     * SHORT: sub ax, word ptr [ecx+0x5ecdc05]                    sub r16, r/m16
+     * SHORT: sub ax, word ptr [ecx+0x5ecdc05]                     SUB r16, r/m16
 	 * 0x66 0x2b 0x81 0x05 0xdc 0xec 0x05 
 	 */
 	memset(&vie, 0, sizeof(struct vie));
@@ -1247,7 +1247,7 @@ main()
 
 	/*
 	 * ICLASS: SUB                 CATEGORY: BINARY               EXTENSION: BASE            IFORM: SUB_GPRv_MEMv        ISA_SET: I86
-     * SHORT: sub eax, dword ptr [ecx+0x5ecdc05]                    sub r32, r/m32
+     * SHORT: sub eax, dword ptr [ecx+0x5ecdc05]                   SUB r32, r/m32
 	 * 0x2b 0x81 0x05 0xdc 0xec 0x05 
 	 */
 	memset(&vie, 0, sizeof(struct vie));
@@ -1276,6 +1276,96 @@ main()
 				      &mc);
 	assert(err == 0);
 	assert(mc.val == 0xdeadbeef);
+
+	/*
+	 * ICLASS: STOSB                 CATEGORY: STRINGOP                 EXTENSION: BASE             IFORM: STOSB           ISA_SET: I86
+     *  SHORT: stosb byte ptr [edi]                                       STOS m8, r8
+	 * 0xAA; 
+	 */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	vm_regs[VM_REG_GUEST_RAX] = 0x0000aabb;
+	vm_regs[VM_REG_GUEST_RCX] = 0xff000000;
+	vie.inst[0] = 0xaa;
+	vie.num_valid = 1;
+
+	gla = 0;
+	err = vmm_decode_instruction(NULL, 0, gla, &vie);
+	assert(err == 0);
+
+	mc.addr = 0xff0000ff;
+	mc.val  = 0x0000aa00;
+	gpa = 0xff0000ff;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
+
+	/*
+	 * ICLASS: STOSW                   CATEGORY: STRINGOP               EXTENSION: BASE            IFORM: STOSW            ISA_SET: I86
+     * SHORT: stosw word ptr [edi]                                       STOS m16, r16
+	 * 0x66 0xAB
+	 */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	vm_regs[VM_REG_GUEST_RAX] = 0x0000aabb;
+	vm_regs[VM_REG_GUEST_RCX] = 0xff000000;
+	vie.inst[0] = 0x66;
+	vie.inst[1] = 0xab;
+	vie.num_valid = 2;
+
+	gla = 0;
+	err = vmm_decode_instruction(NULL, 0, gla, &vie);
+	assert(err == 0);
+
+	mc.addr = 0xff0000ff;
+	mc.val  = 0x0000aa00;
+	gpa = 0xff0000ff;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
+
+	/*
+	 * ICLASS: STOSD              CATEGORY: STRINGOP                 EXTENSION: BASE               IFORM: STOSD           ISA_SET: I386
+     * SHORT: stosd dword ptr [edi]                                   STOS m32, r32
+	 * 0xAB; 
+	 */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	vm_regs[VM_REG_GUEST_RAX] = 0x0000aabb;
+	vm_regs[VM_REG_GUEST_RCX] = 0xff000000;
+	vie.inst[0] = 0xab;
+	vie.num_valid = 1;
+
+	gla = 0;
+	err = vmm_decode_instruction(NULL, 0, gla, &vie);
+	assert(err == 0);
+
+	mc.addr = 0xff0000ff;
+	mc.val  = 0x0000aa00;
+	gpa = 0xff0000ff;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
+
+   
+
+
+   
+
+   
+
 
 
 
