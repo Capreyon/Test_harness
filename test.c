@@ -1145,7 +1145,7 @@ main()
 
     /*
 	 * ICLASS: BT              CATEGORY: BITBYTE                 EXTENSION: BASE             IFORM: BT_MEMv_IMMb          ISA_SET: I386
-     * SHORT: bt dword ptr [ecx+0x58ecdc05], 0xff
+     * SHORT: bt dword ptr [ecx+0x58ecdc05], 0xff              BT r/m32, imm8
      * 0x0F, 0xBA, 0xA1, 0x05, 0xDC, 0xEC, 0x58, 0xFF
      */
 	memset(&vie, 0, sizeof(struct vie));
