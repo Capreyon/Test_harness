@@ -1212,9 +1212,9 @@ main()
 	assert(mc.val == 0xa0aa);
 
 	/*
-	 * (rcx = lapic address, 0xff000000)
-	 * sub    %eax, 0xf0(%rcx)              || sub r16/32/64, r/m16/32/64
-	 * 0x2b 0x81 0xf0 0x00 0x00 0x00
+	 * ICLASS: SUB                 CATEGORY: BINARY               EXTENSION: BASE            IFORM: SUB_GPRv_MEMv        ISA_SET: I86
+     * SHORT: sub ax, word ptr [ecx+0x5ecdc05]                    sub r16, r/m16
+	 * 0x66 0x2b 0x81 0x05 0xdc 0xec 0x05 
 	 */
 	memset(&vie, 0, sizeof(struct vie));
 	vie.base_register = VM_REG_LAST;
@@ -1222,12 +1222,14 @@ main()
 
 	vm_regs[VM_REG_GUEST_RAX] = 0x0000aabb;
 	vm_regs[VM_REG_GUEST_RCX] = 0xff000000;
-	vie.inst[0] = 0x2b;
-	vie.inst[1] = 0xf0;
-	vie.inst[2] = 0x00;
-	vie.inst[3] = 0x00;
-	vie.inst[4] = 0x00;
-	vie.num_valid = 5;
+	vie.inst[0] = 0x66;
+	vie.inst[1] = 0x2b;
+	vie.inst[2] = 0x81;
+	vie.inst[3] = 0x05;
+	vie.inst[4] = 0xdc;
+	vie.inst[5] = 0xec;
+	vie.inst[6] = 0x05;
+	vie.num_valid = 7;
 
 	gla = 0;
 	err = vmm_decode_instruction(NULL, 0, gla, &vie);
@@ -1241,6 +1243,41 @@ main()
 				      &mc);
 	assert(err == 0);
 	assert(mc.val == 0xdeadbeef);
+
+
+	/*
+	 * ICLASS: SUB                 CATEGORY: BINARY               EXTENSION: BASE            IFORM: SUB_GPRv_MEMv        ISA_SET: I86
+     * SHORT: sub eax, dword ptr [ecx+0x5ecdc05]                    sub r32, r/m32
+	 * 0x2b 0x81 0x05 0xdc 0xec 0x05 
+	 */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	vm_regs[VM_REG_GUEST_RAX] = 0x0000aabb;
+	vm_regs[VM_REG_GUEST_RCX] = 0xff000000;
+	vie.inst[0] = 0x2b;
+	vie.inst[1] = 0x81;
+	vie.inst[2] = 0x05;
+	vie.inst[3] = 0xdc;
+	vie.inst[4] = 0xec;
+	vie.inst[5] = 0x05;
+	vie.num_valid = 6;
+
+	gla = 0;
+	err = vmm_decode_instruction(NULL, 0, gla, &vie);
+	assert(err == 0);
+
+	mc.addr = 0xff0000ff;
+	mc.val  = 0x0000aa00;
+	gpa = 0xff0000ff;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
+
+
 
 
 
