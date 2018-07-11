@@ -1359,6 +1359,74 @@ main()
 	assert(err == 0);
 	assert(mc.val == 0xdeadbeef);
 
+    /* 
+	 * ICLASS: PUSH              CATEGORY: PUSH                EXTENSION: BASE               IFORM: PUSH_M              ISA_SET: I86
+     * SHORT: push dword ptr [ecx+0x5ecdc05]                   PUSH r/m 16/32
+     * 0xff 0xb1 0x05 0xdc 0xec 0x05
+	 */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	vm_regs[VM_REG_GUEST_RAX] = 0x0000aabb;
+	vm_regs[VM_REG_GUEST_RCX] = 0xff000000;
+	vie.inst[0] = 0xff;
+	vie.inst[1] = 0xb1;
+	vie.inst[2] = 0x05;
+	vie.inst[3] = 0xdc;
+	vie.isnt[4] = 0xec;
+	vie.inst[5] = 0x05;
+	vie.num_valid = 6;
+
+	gla = 0;
+	err = vmm_decode_instruction(NULL, 0, gla, &vie);
+	assert(err == 0);
+
+	mc.addr = 0xff0000ff;
+	mc.val  = 0x0000aa00;
+	gpa = 0xff0000ff;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
+
+	/* 
+	 * ICLASS: POP               CATEGORY: POP                    EXTENSION: BASE           IFORM: POP_MEMv          ISA_SET: I86
+     * SHORT: pop dword ptr [ecx+0x5ecdc05]                       POP r/m 16/32
+     * 0x8f 0x81 0x05 0xdc 0xec 0x05
+	 */
+	memset(&vie, 0, sizeof(struct vie));
+	vie.base_register = VM_REG_LAST;
+	vie.index_register = VM_REG_LAST;
+
+	vm_regs[VM_REG_GUEST_RAX] = 0x0000aabb;
+	vm_regs[VM_REG_GUEST_RCX] = 0xff000000;
+	vie.inst[0] = 0x8f;
+	vie.inst[1] = 0x81;
+	vie.inst[2] = 0x05;
+	vie.inst[3] = 0xdc;
+	vie.isnt[4] = 0xec;
+	vie.inst[5] = 0x05;
+	vie.num_valid = 6;
+
+	gla = 0;
+	err = vmm_decode_instruction(NULL, 0, gla, &vie);
+	assert(err == 0);
+
+	mc.addr = 0xff0000ff;
+	mc.val  = 0x0000aa00;
+	gpa = 0xff0000ff;
+	err = vmm_emulate_instruction(NULL, 0, gpa, &vie,
+				      test_mread, test_mwrite,
+				      &mc);
+	assert(err == 0);
+	assert(mc.val == 0xdeadbeef);
+
+
+
+
+
    
 
 
