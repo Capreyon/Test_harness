@@ -54,7 +54,72 @@ and the compiled examples will be in obj/examples.
    See source build documentation for more information.
    
    
-                                 Tests are in developing process
+Tests for the following bhyve instructions are written.
+   
+   
+> And r/m16, imm16
+
+> And r/m8, imm8
+
+> And r/m16/32, imm8
+
+> Mov r/m8, r8
+
+> Mov r/m16/32, r16/32
+
+> Mov eax, moffs16/32
+
+> Mov moffs16/32, eax
+
+> Mov r/m16, imm16
+
+> Mov r/m32, imm32
+
+> Mov r/m8, imm8 
+
+> MovZX r16, r/m8 (mov with zero extend)
+
+> MovZX r32, r/m8
+
+> Mov ZX r16/32, r/m16
+
+> MovSX r16, r/m8 (mov with sign-extension)
+
+> MovSX r32, r/m8
+
+> MovSB m8, m8 (mov data from string to string)
+
+> MovSW m8, m8
+
+> MovSD m32, m32
+
+> OR r16/32, r/m 16/32
+
+> Cmp r/m16/32, r16/32
+
+> Cmp r16/32, r/m16/32
+
+> BT r/m 16, imm8
+
+> BT r/m 32,imm8
+
+> SUB r16, r/m16
+
+> SUB r32, r/m32
+
+> STOS m8, r8
+
+> STOS m16, r16
+
+> STOS m32, r32
+
+> PUSH r/m 16/32
+
+> POP r/m 16/32
+  
+   
+   
+                                 Automation of Tests are in developing process
 
 
 
